@@ -1,3 +1,20 @@
+Status: Guest Mode / Awaiting Authentication
+:5500/favicon.ico:1   GET http://127.0.0.1:5500/favicon.ico 404 (Not Found)
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+icons/icon-192x192.png:1   GET http://127.0.0.1:5500/public/icons/icon-192x192.png 404 (Not Found)
+index.html:1  Error while trying to use the following icon from the Manifest: http://127.0.0.1:5500/public/icons/icon-192x192.png (Download error or resource isn't a valid image)
+
+
+
+
+
+
+
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
