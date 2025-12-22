@@ -1,0 +1,21 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCLd4MLONU_5OFie6WN2XmXmlMyfuJ5_8I",
+  authDomain: "gamebridge-f4789.firebaseapp.com",
+  projectId: "gamebridge-f4789",
+  storageBucket: "gamebridge-f4789.firebasestorage.app",
+  messagingSenderId: "562553872482",
+  appId: "1:562553872482:web:02b34e7bc1b7a25af8f13b",
+  measurementId: "G-X3B8B4L4XW"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
