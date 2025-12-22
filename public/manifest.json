@@ -1,0 +1,49 @@
+{
+  "name": "GameBridge Elite Gaming Hub",
+  "short_name": "GameBridge",
+  "description": "Premium Instant Play Gaming Hub. Test top-tier titles without downloads.",
+  "start_url": "/index.html",
+  "display": "fullscreen",
+  "background_color": "#0a0a0a",
+  "theme_color": "#d4af37",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["games", "entertainment", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Instant Play",
+      "url": "/index.html?action=play",
+      "description": "Jump straight into the newest demos",
+      "icons": [{ "src": "icons/play-shortcut.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Achievements",
+      "url": "/profile.html",
+      "description": "View your gamer status and badges",
+      "icons": [{ "src": "icons/badge-shortcut.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/landing-page.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "GameBridge VIP Gateway"
+    }
+  ]
+}
