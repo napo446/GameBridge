@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="description" content="GameBridge: Elite Member's Only Gaming Hub. Instant Play, No Downloads.">
+    
+    <title>GameBridge | Access Granted</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLd4MLONU_5OFie6WN2XmXmlMyfuJ5_8I",
+            authDomain: "gamebridge-f4789.firebaseapp.com",
+            projectId: "gamebridge-f4789",
+            storageBucket: "gamebridge-f4789.firebasestorage.app",
+            messagingSenderId: "562553872482",
+            appId: "1:562553872482:web:02b34e7bc1b7a25af8f13b",
+            measurementId: "G-X3B8B4L4XW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+    </script>
+</head>
+<body>
+
+    <div class="bg-overlay"></div>
+
+    <header class="top-nav">
+        <div class="logo">
+            <span class="gold-text">GAME</span>BRIDGE
+        </div>
+        <div class="server-status">
+            <span class="pulse-dot"></span> SERVER: OPTIMIZED
+        </div>
+        <button class="btn-sm" onclick="openLogin()">Sign In</button>
+    </header>
+
+    <main class="hero-section">
+        <section class="content-box">
+            <h2 class="badge">EST. 2024 | ELITE ACCESS</h2>
+            <h1>ACCESS GRANTED:<br><span class="gold-glow">THE ELITE GAMING HUB</span></h1>
+            <p>Instant Play. Zero Downloads. Test the world’s top-tier titles before the public.</p>
+            
+            <button class="btn-main" id="enter-bridge">
+                [ ENTER THE BRIDGE ]
+                <div class="btn-glitch"></div>
+            </button>
+        </section>
+
+        <section class="features">
+            <div class="feature-card">
+                <div class="icon">⚡</div>
+                <h3>Instant Access</h3>
+                <p>Launch games in < 3s</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">☁️</div>
+                <h3>No Storage</h3>
+                <p>Play 100% in-cloud</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🏆</div>
+                <h3>Pro Status</h3>
+                <p>Earn XP & Badges</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="live-ticker">
+        <div class="ticker-wrapper">
+            <span class="ticker-item">* User_442 unlocked Beta Elite status on FC Mobile...</span>
+            <span class="ticker-item">* New high score recorded in Raid: Shadow Legends Demo...</span>
+            <span class="ticker-item">* User_197 reached Level 10 in Genshin Impact Test Drive...</span>
+        </div>
+    </footer>
+
+    <script src="app.js" type="module"></script>
+</body>
+</html>
