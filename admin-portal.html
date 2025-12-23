@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBridge | Admin Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <nav class="flex justify-between items-center mb-10">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🎮</span>
+            <h1 class="text-2xl font-bold text-cyan-400">GameBridge <span class="text-white font-light text-sm uppercase tracking-widest ml-2 italic">Master Portal</span></h1>
+        </div>
+        <button id="logoutBtn" class="text-sm bg-red-500/20 text-red-400 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white transition">Logout</button>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-gray-400 text-sm">Total Players</p>
+            <h2 id="playerCount" class="text-3xl font-bold">0</h2>
+        </div>
+        <div class="glass p-6 rounded-2xl">
+            <p class="text-gray-400 text-sm">Active Games</p>
+            <h2 id="gameCount" class="text-3xl font-bold">0</h2>
+        </div>
+        <div class="glass p-6 rounded-2xl border-l-4 border-cyan-400">
+            <p class="text-gray-400 text-sm">Revenue Today</p>
+            <h2 class="text-3xl font-bold tracking-tight">$0.00</h2>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="glass p-6 rounded-3xl h-[400px] flex flex-col">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Live Player List
+            </h3>
+            <div id="userList" class="space-y-3 overflow-y-auto pr-2">
+                <p class="text-gray-500 text-center py-10">Waiting for data...</p>
+            </div>
+        </div>
+
+        <div class="glass p-6 rounded-3xl">
+            <h3 class="text-xl font-bold mb-4 text-cyan-400">Add New Game</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400 ml-1">Title</label>
+                    <input type="text" id="gameTitle" placeholder="e.g. Space Invaders" class="w-full bg-white/10 border border-white/10 p-3 rounded-xl focus:border-cyan-400 outline-none">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400 ml-1">Game URL</label>
+                    <input type="text" id="gameUrl" placeholder="https://..." class="w-full bg-white/10 border border-white/10 p-3 rounded-xl focus:border-cyan-400 outline-none">
+                </div>
+                <button id="addGameBtn" class="w-full bg-cyan-500 text-black font-extrabold py-4 rounded-xl hover:bg-cyan-400 transition transform active:scale-95">
+                    PUSH LIVE TO PLAYERS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            serverTimestamp, 
+            onSnapshot, 
+            query, 
+            orderBy 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCLd4MLONU_5OFie6WN2XmXmlMyfuJ5_8I",
+            authDomain: "gamebridge-f4789.firebaseapp.com",
+            projectId: "gamebridge-f4789",
+            storageBucket: "gamebridge-f4789.firebasestorage.app",
+            messagingSenderId: "562553872482",
+            appId: "1:562553872482:web:02b34e7bc1b7a25af8f13b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const ADMIN_EMAIL = "your-email@gmail.com"; // CHANGE THIS TO YOUR EMAIL
+
+        // 1. SECURITY & LOGOUT
+        onAuthStateChanged(auth, (user) => {
+            if (!user || user.email !== ADMIN_EMAIL) {
+                window.location.href = 'index.html';
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = 'index.html');
+        });
+
+        // 2. REAL-TIME DATA (Listen for Games)
+        onSnapshot(collection(db, "games"), (snapshot) => {
+            document.getElementById('gameCount').innerText = snapshot.size;
+        });
+
+        // 3. ADD NEW GAME LOGIC
+        document.getElementById('addGameBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('addGameBtn');
+            const title = document.getElementById('gameTitle').value;
+            const url = document.getElementById('gameUrl').value;
+
+            if (!title || !url) return alert("Missing information!");
+
+            btn.disabled = true;
+            btn.innerText = "UPLOADING...";
+
+            try {
+                await addDoc(collection(db, "games"), {
+                    title: title,
+                    url: url,
+                    status: "active",
+                    createdAt: serverTimestamp()
+                });
+                
+                alert("Game is now LIVE!");
+                document.getElementById('gameTitle').value = "";
+                document.getElementById('gameUrl').value = "";
+            } catch (e) {
+                alert("Error: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "PUSH LIVE TO PLAYERS";
+            }
+        });
+
+        // Note: For User Tracking, we would normally save a 'users' collection in Firestore
+        // upon registration. For now, this is ready to display them once they sign up.
+    </script>
+</body>
+</html>
