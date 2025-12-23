@@ -222,6 +222,51 @@
             window.location.href = 'signup.html';
         });
 
+// 3. Email/Password Login with Admin Bypass & Player Verification
+document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+
+    // YOUR SPECIFIC ADMIN CREDENTIALS
+    const ADMIN_ID = "ownergamebridge@gmail.com"; 
+
+    if(!email || !pass) return alert("Please fill in your details.");
+
+    try {
+        // Log into Firebase officially for both Admin and Players
+        const userCred = await signInWithEmailAndPassword(auth, email, pass);
+        const user = userCred.user;
+
+        // CHECK IF ADMIN: If yes, skip verification and go to portal
+        if (user.email === ADMIN_ID) {
+            localStorage.setItem('lastAuthMethod', 'password');
+            alert("Welcome Back, Admin.");
+            window.location.href = 'admin-portal.html';
+        } 
+        // CHECK IF REGULAR PLAYER: Must be verified
+        else {
+            if (user.emailVerified) {
+                localStorage.setItem('lastAuthMethod', 'password');
+                window.location.href = 'player-dashboard.html';
+            } else {
+                alert("Please verify your email first!");
+                await auth.signOut();
+            }
+        }
+    } catch (error) {
+        // "Sync" Logic for Google users remains untouched
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+            const methods = await fetchSignInMethodsForEmail(auth, email).catch(() => []);
+            if (methods.includes('google.com')) {
+                alert("It looks like you usually Sign in with Google. Please use the Google button!");
+            } else {
+                alert("Access Denied: Incorrect credentials.");
+            }
+        } else {
+            alert(error.message);
+        }
+    }
+});
 
 
     </script>
