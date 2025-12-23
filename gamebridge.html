@@ -1,2 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBridge | Legal & Corporate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* The Gold G Logo on the far left */
+        .side-logo {
+            position: fixed;
+            left: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 50%, #fbf5b7 55%, #aa771c 100%);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            box-shadow: 0 0 30px rgba(191, 149, 63, 0.3);
+            animation: float-g 6s infinite ease-in-out;
+            z-index: 50;
+        }
+
+        .side-logo::after {
+            content: 'G';
+            font-size: 2.5rem;
+            background: linear-gradient(180deg, #5d4a1f, #2a220a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes float-g {
+            0%, 100% { transform: translateY(-50%) translateX(0); }
+            50% { transform: translateY(-60%) translateX(10px); }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="side-logo w-24 h-24 hidden lg:flex"></div>
+
+    <main class="w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl">
+        
+        <div class="p-8 md:w-1/3 bg-white/5 border-b md:border-b-0 md:border-r border-white/10 flex flex-col justify-between">
+            <div>
+                <h1 class="text-3xl font-black tracking-tighter text-white">GAMEBRIDGE</h1>
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-2">Next Gen Infrastructure</p>
+            </div>
+            
+            <div class="mt-12">
+                <a href="index.html" class="inline-block text-[10px] font-bold border border-white/20 px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all uppercase tracking-widest">
+                    Back to Portal
+                </a>
+            </div>
+        </div>
+
+        <div class="p-8 md:p-12 md:w-2/3 max-h-[80vh] overflow-y-auto custom-scrollbar">
+            <section class="space-y-8 text-sm leading-relaxed text-gray-300">
+                
+                <div>
+                    <h2 class="text-white font-bold text-lg mb-3 flex items-center gap-2">
+                        <span class="text-orange-400">I.</span> Executive Summary
+                    </h2>
+                    <p>GameBridge is a premier, next-generation gaming infrastructure designed to unify the global gaming ecosystem. By leveraging high-performance cloud authentication and a state-of-the-art interface, the platform provides a seamless portal for digital asset management and community engagement. GameBridge serves as the critical link between developers and a global audience, prioritizing security and speed.</p>
+                </div>
+
+                <div>
+                    <h2 class="text-white font-bold text-lg mb-3 flex items-center gap-2">
+                        <span class="text-orange-400">II.</span> Terms & Conditions
+                    </h2>
+                    <p>By accessing the GameBridge PWA, users enter into a legally binding agreement. Users are strictly prohibited from reverse engineering, data scraping, or deploying unauthorized third-party modifications. GameBridge reserves the right to suspend accounts found in violation of fair-play standards.</p>
+                </div>
+
+                <div>
+                    <h2 class="text-white font-bold text-lg mb-3 flex items-center gap-2">
+                        <span class="text-orange-400">III.</span> Global Privacy Policy
+                    </h2>
+                    <p>We operate under a "Privacy by Design" framework. We utilize secure Firebase-grade encryption to process authentication data. No personal identifiers are sold or shared with external marketing entities. Users may exercise their right to be forgotten by submitting a formal request.</p>
+                </div>
+
+                <div>
+                    <h2 class="text-white font-bold text-lg mb-3 flex items-center gap-2">
+                        <span class="text-orange-400">IV.</span> Intellectual Property
+                    </h2>
+                    <p>The "Gold G" branding, the "GameBridge" trademark, and all source code are the exclusive intellectual property of the founder. All rights reserved <strong>© 2025</strong>. Unauthorized reproduction constitutes a violation of international copyright law.</p>
+                </div>
+
+                <hr class="border-white/10 my-8">
+
+                <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-4">Founder & Administrative Office</p>
+                    <p class="text-white font-bold">Tshepo Napo</p>
+                    <p class="text-gray-400">Contact: 0790936802</p>
+                    <p class="text-orange-400">napotshepo9@gmail.com</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+</body>
+</html>
 
 
