@@ -36,20 +36,19 @@ body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 1
             <h1 class="text-xl font-bold tracking-tight">GameBridge</h1>
         </div>
         <nav class="flex gap-6 text-sm font-semibold">
-            <a href="#" class="text-white border-b-2 border-cyan-400 pb-1">LIBRARY</a>
-            <a href="#" class="text-gray-400 hover:text-white transition-colors">HISTORY</a>
+            <button id="navLibrary" class="text-white border-b-2 border-cyan-400 pb-1">LIBRARY</button>
+            <button id="navHistory" class="text-gray-400 hover:text-white transition-colors">HISTORY</button>
         </nav>
         <button id="logoutBtn" class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10">👤</button>
     </header>
 
-    <div class="p-6">
+    <div id="viewTitle" class="p-6">
         <h2 class="text-2xl font-bold mb-2">Discover & Play</h2>
         <p class="text-gray-400 text-sm">Access verified game demos and full titles.</p>
     </div>
 
     <div id="gamesContainer" class="flex-1 overflow-y-auto p-6 pt-0 custom-scrollbar space-y-4">
         <div id="loader" class="space-y-4">
-            <div class="game-card p-4 rounded-2xl h-32 skeleton"></div>
             <div class="game-card p-4 rounded-2xl h-32 skeleton"></div>
             <div class="game-card p-4 rounded-2xl h-32 skeleton"></div>
         </div>
@@ -68,7 +67,6 @@ import {
     addDoc, serverTimestamp, doc, getDoc, updateDoc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// --- Firebase Config ---
 const firebaseConfig = {
     apiKey: "AIzaSyCLd4MLONU_5OFie6WN2XmXmlMyfuJ5_8I",
     authDomain: "gamebridge-f4789.firebaseapp.com",
@@ -82,122 +80,119 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- SESSION SECURITY ---
-onAuthStateChanged(auth, user => {
-    if (!user) window.location.href = 'index.html';
-});
+onAuthStateChanged(auth, user => { if (!user) window.location.href = 'index.html'; });
 
-// --- REWARDED AD (Launch Demo) ---
-window.handleLaunchDemo = async (gameId, url, adPayout) => {
+// --- SECURE MONETIZATION LOGIC ---
+
+window.handleLaunchDemo = async (gameId, url) => {
     if(!auth.currentUser) return;
-    // TODO: Replace confirm with real Ad SDK
     const adCompleted = confirm("Watch a 30s ad to launch the demo?");
     if(adCompleted) {
         try {
+            // SECURITY: Pull payout amount from DB, not from user input
+            const gSnap = await getDoc(doc(db, "games", gameId));
+            const payout = gSnap.exists() ? gSnap.data().adPayout : 0;
+
             await addDoc(collection(db, "events"), {
                 userName: auth.currentUser.email,
-                gameName: gameId,
+                gameName: gSnap.data().title || "Unknown Game",
                 type: "Ad Watched",
-                value: Number(adPayout) || 0,
+                value: Number(payout) || 0,
                 timestamp: serverTimestamp()
             });
             window.open(url, "_blank");
-        } catch(err) {
-            console.error("Ad logging failed:", err);
-        }
+        } catch(err) { console.error("Billing error:", err); }
     }
 };
 
-// --- INSTALL ATTRIBUTION (Full App) ---
-window.handleInstall = async (gameId, url, installPayout) => {
+window.handleInstall = async (gameId, url) => {
     if(!auth.currentUser) return;
-    // TODO: Replace confirm with real affiliate SDK
     const confirmed = confirm("Redirecting to Play Store. Track this install?");
     if(confirmed) {
         try {
+            const gSnap = await getDoc(doc(db, "games", gameId));
+            const payout = gSnap.exists() ? gSnap.data().installPayout : 0;
+
             await addDoc(collection(db, "events"), {
                 userName: auth.currentUser.email,
-                gameName: gameId,
+                gameName: gSnap.data().title || "Unknown Game",
                 type: "Install",
-                value: Number(installPayout) || 0,
+                value: Number(payout) || 0,
                 timestamp: serverTimestamp()
             });
 
-            // Update game accumulated revenue
+            // Update Master Balance for this game
             const gameRef = doc(db, "games", gameId);
-            const gameSnap = await getDoc(gameRef);
-            if(gameSnap.exists()) {
-                const currentRev = gameSnap.data().accumulatedRevenue || 0;
-                await updateDoc(gameRef, { accumulatedRevenue: currentRev + Number(installPayout) });
-            }
+            const currentRev = gSnap.data().accumulatedRevenue || 0;
+            await updateDoc(gameRef, { accumulatedRevenue: currentRev + Number(payout) });
 
             window.open(url, "_blank");
-        } catch(err) {
-            console.error("Install tracking failed:", err);
-        }
+        } catch(err) { console.error("Tracking error:", err); }
     }
 };
 
-// --- LEVEL / MILESTONE TRACKING ---
-window.logLevelCompletion = async (gameId, level) => {
-    if(!auth.currentUser) return;
-    try {
-        await addDoc(collection(db, "playerProgress"), {
-            userId: auth.currentUser.email,
-            gameId,
-            level,
-            milestonePaid: false,
-            timestamp: serverTimestamp()
-        });
-    } catch(err) {
-        console.error("Level logging failed:", err);
-    }
-};
+// --- VIEW NAVIGATION (Library vs History) ---
 
-// --- REAL-TIME GAME FETCH ---
-const gamesContainer = document.getElementById("gamesContainer");
-const q = query(collection(db, "games"), where("status","==","active"), orderBy("createdAt","desc"));
-
-onSnapshot(q, snapshot => {
-    gamesContainer.innerHTML = "";
-    if(snapshot.empty) {
-        gamesContainer.innerHTML = `<p class="text-center text-gray-500 py-10">No games available currently.</p>`;
-        return;
-    }
-
-    snapshot.forEach(docSnap => {
-        const game = docSnap.data();
-        const gameId = docSnap.id;
-        const card = `
-        <div class="game-card p-4 rounded-2xl shadow-lg border-l-4 border-cyan-500/30">
-            <div class="flex gap-4 mb-4">
-                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-3xl">🕹️</div>
-                <div class="flex-1">
-                    <h3 class="text-lg font-bold text-white">${game.title}</h3>
-                    <p class="text-[10px] text-cyan-400 uppercase font-black tracking-widest">${game.studio}</p>
-                    <p class="text-[10px] text-gray-500 mt-1 italic">Engagement tracked via GameBridge SDK</p>
+const loadLibrary = () => {
+    document.getElementById('viewTitle').innerHTML = `<h2 class="text-2xl font-bold mb-2">Discover & Play</h2><p class="text-gray-400 text-sm">Access verified game demos and full titles.</p>`;
+    document.getElementById('navLibrary').className = "text-white border-b-2 border-cyan-400 pb-1";
+    document.getElementById('navHistory').className = "text-gray-400 hover:text-white transition-colors";
+    
+    const q = query(collection(db, "games"), where("status","==","active"), orderBy("createdAt","desc"));
+    onSnapshot(q, snap => {
+        gamesContainer.innerHTML = "";
+        snap.forEach(d => {
+            const g = d.data();
+            gamesContainer.innerHTML += `
+            <div class="game-card p-4 rounded-2xl shadow-lg border-l-4 border-cyan-500/30">
+                <div class="flex gap-4 mb-4">
+                    <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-3xl">🕹️</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-white">${g.title}</h3>
+                        <p class="text-[10px] text-cyan-400 uppercase font-black tracking-widest">${g.studio}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="handleLaunchDemo('${gameId}', '${game.url}', '${game.adPayout}')" class="btn-play py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-xs text-white uppercase">
-                    <span>▶</span> Launch Demo
-                </button>
-                <button onclick="handleInstall('${gameId}', '${game.url}', '${game.installPayout}')" class="btn-install py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-xs text-white uppercase">
-                    <span>📲</span> Full App
-                </button>
-            </div>
-        </div>`;
-        gamesContainer.innerHTML += card;
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="handleLaunchDemo('${d.id}', '${g.url}')" class="btn-play py-3 rounded-xl font-bold text-xs uppercase text-white">▶ Launch Demo</button>
+                    <button onclick="handleInstall('${d.id}', '${g.url}')" class="btn-install py-3 rounded-xl font-bold text-xs uppercase text-white">📲 Full App</button>
+                </div>
+            </div>`;
+        });
     });
-});
+};
 
-// --- LOGOUT ---
-document.getElementById("logoutBtn").addEventListener("click", () => {
-    if(confirm("Sign out of GameBridge?")) {
-        signOut(auth).then(() => window.location.href = "index.html");
-    }
-});
+const loadHistory = () => {
+    document.getElementById('viewTitle').innerHTML = `<h2 class="text-2xl font-bold mb-2">My History</h2><p class="text-gray-400 text-sm">Track your recent game engagement.</p>`;
+    document.getElementById('navHistory').className = "text-white border-b-2 border-cyan-400 pb-1";
+    document.getElementById('navLibrary').className = "text-gray-400 hover:text-white transition-colors";
+
+    const q = query(collection(db, "events"), where("userName", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
+    onSnapshot(q, snap => {
+        gamesContainer.innerHTML = "";
+        if(snap.empty) gamesContainer.innerHTML = `<p class="text-center text-gray-500 py-10">No history found.</p>`;
+        snap.forEach(d => {
+            const e = d.data();
+            gamesContainer.innerHTML += `
+            <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center">
+                <div>
+                    <p class="text-xs font-bold">${e.gameName}</p>
+                    <p class="text-[10px] text-gray-500 uppercase">${e.type}</p>
+                </div>
+                <p class="text-cyan-400 font-mono text-xs">READY</p>
+            </div>`;
+        });
+    });
+};
+
+document.getElementById('navLibrary').addEventListener('click', loadLibrary);
+document.getElementById('navHistory').addEventListener('click', loadHistory);
+document.getElementById('logoutBtn').addEventListener("click", () => signOut(auth).then(() => window.location.href = "index.html"));
+
+// Initial Load
+loadLibrary();
+
 </script>
 </body>
 </html>
+
 
