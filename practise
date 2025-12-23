@@ -1,3 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBridge | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-bg: #0d1b2a; --accent-purple: #7b2cbf; --accent-teal: #00f5d4; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 10% 10%, #1a1a2e 0%, #0f3460 30%, #533483 70%, #16213e 100%);
+            height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;
+        }
+        .grid-layer {
+            position: absolute; bottom: -10%; left: -10%; width: 120%; height: 60%;
+            background-image: linear-gradient(to right, rgba(0, 245, 212, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 245, 212, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px; transform: perspective(500px) rotateX(60deg); z-index: 1;
+        }
+        .bubble-g {
+            position: absolute; display: flex; align-items: center; justify-content: center; font-weight: 900; border-radius: 12px;
+            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 50%, #fbf5b7 55%, #aa771c 100%);
+            border: 1px solid rgba(255, 215, 0, 0.3); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); color: #1a1a2e;
+            animation: float 15s infinite ease-in-out; user-select: none; z-index: 2;
+        }
+        .bubble-g::after { content: 'G'; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-40px) rotate(20deg) scale(1.1); }
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 32px; z-index: 10;
+        }
+        .input-field { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.1); color: white; transition: all 0.3s ease; }
+        .input-field:focus { border-color: #00f5d4; outline: none; box-shadow: 0 0 10px rgba(0, 245, 212, 0.3); }
+        .prefer-google { border: 2px solid #00f5d4; box-shadow: 0 0 15px rgba(0, 245, 212, 0.5); }
+    </style>
+</head>
+<body>
+
+    <div class="grid-layer"></div>
+
+    <div class="bubble-g w-14 h-14 top-20 left-[10%]" style="animation-delay: 0s;"></div>
+    <div class="bubble-g w-20 h-20 bottom-24 right-[12%]" style="animation-delay: 3s;"></div>
+
+    <main class="relative z-20 w-full max-w-md p-6">
+        <div class="glass-card p-10 md:p-14 text-center">
+            
+            <div class="mb-8">
+                <div class="flex justify-center items-center gap-3 mb-2">
+                    <span class="text-3xl filter drop-shadow-[0_0_8px_rgba(0,245,212,0.8)]">🎮</span>
+                    <h1 class="text-4xl font-bold text-white tracking-tight">GameBridge</h1>
+                </div>
+                <p class="text-gray-300 text-sm font-light">Play games. Discover worlds. Level up.</p>
+            </div>
+
+            <div class="space-y-4">
+                <button id="googleBtn" class="w-full bg-white text-gray-800 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 shadow-lg hover:bg-gray-100 transition-all">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="G">
+                    Sign in with Google
+                </button>
+
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold pt-2">Or use email</p>
+
+                <div class="space-y-3 text-left">
+                    <input type="email" id="email" placeholder="Email Address" class="input-field w-full py-3 px-5 rounded-lg">
+                    <div class="flex relative">
+                        <input type="password" id="password" placeholder="Password" class="input-field w-full py-3 px-5 rounded-l-lg border-r-0">
+                        <button id="loginBtn" class="bg-[#00c9b1] hover:bg-[#00f5d4] text-white font-bold px-6 rounded-r-lg transition-colors">
+                            Login
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-4">
+                    <button id="forgotBtn" class="text-xs text-gray-400 hover:text-white transition-colors underline">Forgot Password?</button>
+                    <button id="signUpBtn" class="text-xs text-cyan-400 hover:text-white font-bold transition-colors">Create account</button>
+                </div>
+            </div>
+
+            <div class="mt-12 text-[9px] text-gray-500 uppercase tracking-[0.3em]">
+                Powered by <span class="text-orange-400 font-bold">GameBridge</span>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+            getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, sendPasswordResetEmail 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLd4MLONU_5OFie6WN2XmXmlMyfuJ5_8I",
+            authDomain: "gamebridge-f4789.firebaseapp.com",
+            projectId: "gamebridge-f4789",
+            storageBucket: "gamebridge-f4789.firebasestorage.app",
+            messagingSenderId: "562553872482",
+            appId: "1:562553872482:web:02b34e7bc1b7a25af8f13b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // --- Production Logic: Sync User to Firestore ---
+        const syncUser = async (user) => {
+            const userRef = doc(db, "users", user.uid);
+            await setDoc(userRef, {
+                email: user.email,
+                lastLogin: serverTimestamp(),
+                status: "Online",
+                role: user.email === "ownergamebridge@gmail.com" ? "admin" : "player"
+            }, { merge: true });
+        };
+
+        // UI Enhancement: Highlight Google if used previously
+        if (localStorage.getItem('lastAuthMethod') === 'google') {
+            document.getElementById('googleBtn').classList.add('prefer-google');
+        }
+
+        // --- GOOGLE LOGIN ---
+        document.getElementById('googleBtn').addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                await syncUser(result.user);
+                localStorage.setItem('lastAuthMethod', 'google');
+                window.location.href = 'player-dashboard.html';
+            } catch (error) {
+                alert("Auth Error: " + error.message);
+            }
+        });
+
+        // --- EMAIL LOGIN ---
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value;
+            const ADMIN_ID = "ownergamebridge@gmail.com";
+
+            if(!email || !pass) return alert("Please enter email and password.");
+
+            try {
+                const userCred = await signInWithEmailAndPassword(auth, email, pass);
+                const user = userCred.user;
+
+                if (user.email === ADMIN_ID) {
+                    localStorage.setItem('lastAuthMethod', 'password');
+                    window.location.href = 'admin-portal.html';
+                } else if (user.emailVerified) {
+                    await syncUser(user);
+                    localStorage.setItem('lastAuthMethod', 'password');
+                    window.location.href = 'player-dashboard.html';
+                } else {
+                    alert("Please verify your email before logging in.");
+                    await auth.signOut();
+                }
+            } catch (error) {
+                alert("Login Failed: Please check your credentials or try Google login.");
+            }
+        });
+
+        // --- PASSWORD RESET ---
+        document.getElementById('forgotBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            if(!email) return alert("Enter your email address first.");
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Reset link sent to your email!");
+            } catch (error) { alert(error.message); }
+        });
+
+        document.getElementById('signUpBtn').addEventListener('click', () => window.location.href = 'signup.html');
+    </script>
+</body>
+</html>
 
 
 
