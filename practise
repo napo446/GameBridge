@@ -104,6 +104,149 @@ service cloud.firestore {
 ​7️⃣ In One Sentence (Pitch Ready)
 ​"GameBridge is a Firebase-powered PWA that monetizes game discovery by tracking ad views, installs, and level-based milestones—providing studios with a transparent, high-performance platform for user acquisition and billing
 
+1️⃣ User-Facing Features (Player Dashboard / App)
+
+This is what your players will interact with.
+
+a) Player Dashboard
+
+Library of games: Display demos and full apps, with filtering by studio, category, or popularity.
+
+Skeleton loaders & smooth UX: Loading animations while data is fetched.
+
+Responsive design: Works on desktop and mobile.
+
+Secure login/logout: Firebase Auth (Email/password, optional Google/Apple).
+
+b) Monetization & Tracking
+
+Rewarded Ads (Launch Demo)
+
+Player watches ad → unlocks demo.
+
+Revenue logged to Firestore (per-user, per-game).
+
+Install Attribution / CPI Tracking (Full App)
+
+Clicking Full App redirects to Play/App Store via tracking link.
+
+Install confirmed → revenue logged.
+
+Event logging: Track clicks, ad views, installs, session duration.
+
+c) Progress Tracking
+
+Milestones / Levels: Track which levels/milestones each player completed.
+
+Optional achievements & badges: Gamification layer.
+
+d) User account & profile
+
+View username, email, total ad rewards earned.
+
+Account management (change password, view history).
+
+2️⃣ Admin Portal (Web / Dashboard)
+
+Admins need to manage games, track revenue, and view analytics.
+
+a) Game Management
+
+Add / edit / remove games.
+
+Set status: active/inactive.
+
+Set ad payout (adPayout) and install payout (installPayout).
+
+Upload images / thumbnails / categories.
+
+b) Revenue Tracking
+
+View total ad revenue per game & per player.
+
+View install revenue (CPI).
+
+Aggregate analytics: daily/weekly/monthly totals.
+
+c) Player Analytics
+
+Track which players played which demos.
+
+Track level/milestone completion.
+
+Optional: Retention metrics (daily active users, sessions).
+
+d) Admin Tools
+
+Manual override of revenue.
+
+Audit logs: who added/edited/removed a game.
+
+Notifications for errors or suspicious behavior.
+
+3️⃣ Backend Requirements (Firebase)
+
+Firebase provides serverless backend. Features needed:
+
+a) Auth
+
+Email/password (mandatory).
+
+Optional OAuth: Google, Apple.
+
+b) Firestore Collections
+
+Collection	Description
+games	Stores game info (title, studio, URL, adPayout, installPayout, status, createdAt, accumulatedRevenue)
+events	Logs ad views, installs, clicks, and revenue events with userName, gameName, type, value, timestamp
+playerProgress	Logs milestones / levels completed by player with milestonePaid flag
+users	Optional: extra player data (profile, stats)
+analytics	Optional: click tracking, session duration, engagement metrics
+
+c) Security Rules
+
+Players: Read only for active games, write only for their events.
+
+Admins: Full read/write access.
+
+Prevent overwriting revenue or injecting fake events.
+
+d) Cloud Functions (Optional but recommended)
+
+Process deferred installs or track real revenue events from affiliate SDK.
+
+Send notifications to players (optional).
+
+Update accumulatedRevenue automatically on events insertion.
+
+4️⃣ Ad & Monetization Integrations
+
+a) Rewarded Ads
+
+SDKs: Tapjoy, AppLovin, IronSource, AdMob.
+
+Player must watch full ad → revenue credited.
+
+Optional: Cap ads per session/day.
+
+b) Install Attribution / CPI
+
+Affiliate SDK or tracking links.
+
+Must confirm install → revenue credited.
+
+Optional: Deep link to store or redirect based on device OS.
+
+c) Analytics & ROI Tracking
+
+Track CTR for Play / Install buttons.
+
+Track ad completions.
+
+Provide per-game revenue reports to studios.
+
+
+
 
 
 
