@@ -1,4 +1,88 @@
-signup.html:82 Uncaught SyntaxError: missing ) after argument list (at signup.html:82:23)
+⚠ Missing:
+
+Per game totals
+
+Per studio totals
+
+Paid vs unpaid                                                                                                                                                        ⚠ Missing:
+
+Disable game
+
+Edit game
+
+Milestone configuration                                                                                                                                         ⚠️ FEATURES NOT YET IMPLEMENTED (BUT EXPECTED)
+
+These are not mistakes — they’re Phase 2 / 3 features.
+
+❌ 1️⃣ Level Milestone Configuration (Admin)
+
+Needed:
+
+Set payout levels per game
+
+Example missing collection:
+
+milestones: {
+  level: 5,
+  payout: 0.50
+}
+
+
+Currently:
+
+Events assume milestones already exist
+
+No UI to define them
+
+❌ 2️⃣ Studio Billing & Payment Status
+
+GameBridge requirement:
+
+See which studio paid / didn’t pay
+
+Missing:
+
+payments collection
+
+Invoice generation
+
+Paid / unpaid status
+
+Stripe integration
+
+❌ 3️⃣ Studio Accounts (Multi-Tenant)
+
+Right now:
+
+Admin only
+
+Studios have no login
+
+Needed later:
+
+Studio role
+
+Studio dashboard
+
+Game-scoped access
+
+❌ 4️⃣ Fraud & Validation Logic
+
+Currently:
+
+Events are trusted
+
+No server-side verification shown
+
+Needed:
+
+Cloud Functions for:
+
+Verify ad completion
+
+Verify install
+
+Verify level
 
 
 
