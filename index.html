@@ -222,36 +222,7 @@
             window.location.href = 'signup.html';
         });
 
-        // 3. Email/Password Login with "Sync" Error Handling
-        document.getElementById('loginBtn').addEventListener('click', async () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
 
-            if(!email || !pass) return alert("Please fill in your details.");
-
-            try {
-                const userCred = await signInWithEmailAndPassword(auth, email, pass);
-                if (userCred.user.emailVerified) {
-                    localStorage.setItem('lastAuthMethod', 'password');
-                    window.location.href = 'player-dashboard.html';
-                } else {
-                    alert("Please verify your email first!");
-                    await auth.signOut();
-                }
-            } catch (error) {
-                // Logic to help "sync" users who used Google
-                if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                    const methods = await fetchSignInMethodsForEmail(auth, email).catch(() => []);
-                    if (methods.includes('google.com')) {
-                        alert("It looks like you usually Sign in with Google. Please use the Google button!");
-                    } else {
-                        alert("Incorrect email or password.");
-                    }
-                } else {
-                    alert(error.message);
-                }
-            }
-        });
     </script>
 </body>
 </html>
