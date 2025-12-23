@@ -79,7 +79,7 @@
                 const userCred = await createUserWithEmailAndPassword(auth, email, pass);
                 // This sends the "OTP" in the form of a verification link
                 await sendEmailVerification(userCred.user);
-                alert("Success! Check your email inbox for the verification link. Once clicked, you can log in.");
+                alert("Verification link sent! PLease check your "INBOX". If you don't see it, check your "SPAM" folder and mark it as "Not Spam". Once clicked, you can log in.");
                 window.location.href = 'index.html';
             } catch (error) {
                 alert("Error: " + error.message);
