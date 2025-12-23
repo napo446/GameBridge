@@ -1,3 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Functions
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == 'ownergamebridge@gmail.com'; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+
+    // 1. User Profiles
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      // Users can only create their own profile and cannot set their own role to 'admin'
+      allow create: if isOwner(userId) && request.resource.data.role != 'admin';
+      // Only the actual Admin can change roles or status
+      allow update: if isAdmin() || (isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'lastLogin']));
+      allow delete: if isAdmin();
+    }
+
+    // 2. Games Collection
+    match /games/{gameId} {
+      // Publicly viewable by all logged-in players, but only admin can touch the config
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 3. Events (The Billing System) - MOST IMPORTANT
+    match /events/{eventId} {
+      // Prevents players from reading other people's earnings
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userName == request.auth.token.email);
+      
+      allow create: if isSignedIn() 
+        // Force the email in the event to match the logged-in user
+        && request.resource.data.userName == request.auth.token.email
+        // Hard-cap payouts from the client-side to prevent "Million Dollar" fake events
+        && request.resource.data.value <= 5.0
+        // Ensure they can't create events in the future
+        && request.resource.data.timestamp == request.time;
+
+      // NO ONE can edit or delete a billing event once it is created (Audit Trail)
+      allow update, delete: if isAdmin();
+    }
+
+    // 4. Player Progress
+    match /playerProgress/{docId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.token.email);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.token.email;
+      allow update: if isAdmin(); // Only admin can mark a milestone as "Paid"
+      allow delete: if isAdmin();
+    }
+  }
+}
 
 
 
