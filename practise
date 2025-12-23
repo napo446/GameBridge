@@ -1,88 +1,79 @@
-⚠ Missing:
+2️⃣ Install Tracking Function
 
-Per game totals
+Where to place:
 
-Per studio totals
+Anywhere inside your <script type="module"> after SDK is initialized.
 
-Paid vs unpaid                                                                                                                                                        ⚠ Missing:
+Typically near the bottom of your admin functions, but before the “deploy game” listener.
 
-Disable game
+async function registerInstall(userId, gameId) {
+    try {
+        const revenue = await trackInstall({ userId, gameId });
+        console.log(`Install tracked: $${revenue}`);
 
-Edit game
+        await addDoc(collection(db, "events"), {
+            userName: userId,
+            gameName: gameId,
+            type: "Install",
+            value: revenue,
+            timestamp: serverTimestamp()
+        });
 
-Milestone configuration                                                                                                                                         ⚠️ FEATURES NOT YET IMPLEMENTED (BUT EXPECTED)
-
-These are not mistakes — they’re Phase 2 / 3 features.
-
-❌ 1️⃣ Level Milestone Configuration (Admin)
-
-Needed:
-
-Set payout levels per game
-
-Example missing collection:
-
-milestones: {
-  level: 5,
-  payout: 0.50
+        const gameRef = doc(db, "games", gameId);
+        const gameSnap = await getDoc(gameRef);
+        const currentRevenue = gameSnap.data().accumulatedRevenue || 0;
+        await updateDoc(gameRef, { accumulatedRevenue: currentRevenue + revenue });
+    } catch (err) {
+        console.error("Install tracking failed", err);
+    }
 }
 
+3️⃣ Milestone Tracking / Auto-Payout
 
-Currently:
+Where to place:
 
-Events assume milestones already exist
+After registerInstall().
 
-No UI to define them
+Needs to run in real-time, so use onSnapshot on your playerProgress collection.
 
-❌ 2️⃣ Studio Billing & Payment Status
+onSnapshot(collection(db, "playerProgress"), (snap) => {
+    snap.forEach(async docSnap => {
+        const data = docSnap.data();
+        const game = await getDoc(doc(db, "games", data.gameId));
+        const milestone = game.data().milestones;
 
-GameBridge requirement:
+        if (data.level >= milestone.level && !data.milestonePaid) {
+            await updateDoc(doc(db, "playerProgress", docSnap.id), { milestonePaid: true });
 
-See which studio paid / didn’t pay
+            await addDoc(collection(db, "events"), {
+                userName: data.userId,
+                gameName: data.gameId,
+                type: `Milestone Level ${milestone.level}`,
+                value: milestone.payout,
+                timestamp: serverTimestamp()
+            });
 
-Missing:
+            const gameRef = doc(db, "games", data.gameId);
+            const gameSnap = await getDoc(gameRef);
+            const currentRevenue = gameSnap.data().accumulatedRevenue || 0;
+            await updateDoc(gameRef, { accumulatedRevenue: currentRevenue + milestone.payout });
+        }
+    });
+});
 
-payments collection
+✅ Summary of placement
+Code block	Placement in your admin file
+SDK import + init	Top of <script type="module">, after Firebase imports
+registerInstall() function	After SDK initialization, before “deploy game” listener
+onSnapshot milestone handler	After registerInstall(), also before deploy listener
 
-Invoice generation
 
-Paid / unpaid status
 
-Stripe integration
 
-❌ 3️⃣ Studio Accounts (Multi-Tenant)
 
-Right now:
 
-Admin only
 
-Studios have no login
 
-Needed later:
-
-Studio role
-
-Studio dashboard
-
-Game-scoped access
-
-❌ 4️⃣ Fraud & Validation Logic
-
-Currently:
-
-Events are trusted
-
-No server-side verification shown
-
-Needed:
-
-Cloud Functions for:
-
-Verify ad completion
-
-Verify install
-
-Verify level
 
 
 
