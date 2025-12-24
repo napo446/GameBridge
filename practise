@@ -1,4 +1,4 @@
-index.html:221 Uncaught (in promise) FirebaseError: Missing or insufficient permissions.
+index.html:243 Uncaught (in promise) FirebaseError: Missing or insufficient permissions.
 Promise.then		
 co	@	webchannel_connection.ts:265
 send	@	stream_bridge.ts:85
@@ -42,8 +42,9 @@ enqueueAndForget	@	async_queue_impl.ts:96
 __PRIVATE_firestoreClientWrite	@	sync_engine_impl.ts:458
 executeWrite	@	reference_impl.ts:824
 setDoc	@	reference_impl.ts:316
-syncUser	@	index.html:187
-document.getElementById.onclick	@	index.html:218
+syncUser	@	index.html:201
+await in syncUser		
+document.getElementById.onclick	@	index.html:240
 
 
 
