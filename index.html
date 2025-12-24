@@ -152,6 +152,118 @@
     </div>
 </main>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+    getFirestore,
+    doc,
+    setDoc,
+    updateDoc, // Added this for precise updates
+    addDoc,
+    collection,
+    serverTimestamp,
+    getDoc // Added to check if user exists
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp({
+    apiKey: "AIzaSyCLd4MLONU_5OFie6WN2XmXmlMyfuJ5_8I",
+    authDomain: "gamebridge-f4789.firebaseapp.com",
+    projectId: "gamebridge-f4789",
+    storageBucket: "gamebridge-f4789.appspot.com",
+    messagingSenderId: "562553872482",
+    appId: "1:562553872482:web:02b34e7bc1b7a25af8f13b"
+});
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+// FIXED: syncUser now handles both new Google users (Create) and returning users (Update)
+const syncUser = async (user) => {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+        // If user is new (e.g. Google Sign-in first time)
+        // ALIGNED WITH RULE: Must include 'role' and no 'admin' field
+        await setDoc(userRef, {
+            uid: user.uid,
+            email: user.email,
+            role: "player",
+            joinedAt: serverTimestamp(),
+            lastLogin: serverTimestamp()
+        });
+    } else {
+        // returning user
+        // ALIGNED WITH RULE: Only updating 'lastLogin', not touching protected 'role'
+        await updateDoc(userRef, {
+            lastLogin: serverTimestamp()
+        });
+    }
+};
+
+// FIXED: logLogin no longer sends 'email' because the 'events' rule doesn't allow it
+const logLogin = (user, method) =>
+    addDoc(collection(db, "events"), {
+        userId: user.uid,
+        type: "login", // Must match the list in your rules
+        method: method,
+        timestamp: serverTimestamp()
+    });
+
+document.getElementById("googleBtn").onclick = async () => {
+    try {
+        const { user } = await signInWithPopup(auth, provider);
+        await syncUser(user);
+        await logLogin(user, "google");
+        const token = await user.getIdTokenResult();
+        location.href = token.claims.admin ? "admin-portal.html" : "player-dashboard.html";
+    } catch (error) {
+        console.error(error);
+        alert(error.message);
+    }
+};
+
+document.getElementById("loginBtn").onclick = async () => {
+    const emailVal = document.getElementById("email").value.trim();
+    const pass = document.getElementById("password").value;
+    if (!emailVal || !pass) return alert("Missing credentials");
+
+    try {
+        const { user } = await signInWithEmailAndPassword(auth, emailVal, pass);
+        if (!user.emailVerified) return alert("Verify your email first");
+
+        await syncUser(user);
+        await logLogin(user, "password");
+        const token = await user.getIdTokenResult();
+        location.href = token.claims.admin ? "admin-portal.html" : "player-dashboard.html";
+    } catch (error) {
+        console.error(error);
+        alert(error.message);
+    }
+};
+
+document.getElementById("forgotBtn").onclick = async () => {
+    const emailVal = document.getElementById("email").value.trim();
+    if (!emailVal) return alert("Enter email");
+    try {
+        await sendPasswordResetEmail(auth, emailVal);
+        alert("Password reset sent");
+    } catch (error) {
+        alert(error.message);
+    }
+};
+
+document.getElementById("signUpBtn").onclick = () =>
+    location.href = "signup.html";
+</script>
 
 
 </body>
