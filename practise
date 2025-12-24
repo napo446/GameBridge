@@ -1,3 +1,22 @@
+    /* ============================
+       📊 EVENTS (IMMUTABLE LOG)
+    ============================ */
+    match /events/{eventId} {
+
+      // FIXED: Player can read ONLY their own history, Admin reads all
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      // Player can log ONLY their own events
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.type in [
+          "signup", "login", "ad_view", "install", "click", "session", "Ad Watched", "Install"
+        ]
+        && !("value" in request.resource.data)
+        && !("paid" in request.resource.data);
+
+      allow update, delete: if false;
+    }
 
 
 
