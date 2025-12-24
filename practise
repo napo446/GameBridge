@@ -78,7 +78,7 @@ service cloud.firestore {
           "session"
         ]
         // Block revenue injection
-        && !("value" in request.resource.data)
+        
         && !("paid" in request.resource.data);
 
       // Events are write-once
