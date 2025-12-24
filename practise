@@ -1,3 +1,36 @@
+Step 3: Install the Firebase "Uploader"
+​You need the Firebase CLI (Command Line Interface) to send your files to the internet.
+​Download and install Node.js (Choose the "LTS" version).
+​Open your computer's Terminal (or Command Prompt/PowerShell).
+​Type this command and press Enter:
+npm install -g firebase-tools
+​Once finished, log in by typing:
+firebase login
+(A browser window will open; click "Allow" on your Google account).
+​Step 4: Prepare the Project for Launch
+​In your terminal, navigate to your project folder (e.g., cd Desktop/GameBridge) and run:
+​Initialize: firebase init hosting
+​Select Options:
+​Use the arrow keys to select "Use an existing project".
+​Choose gamebridge-f4789.
+​Public Directory? Type . (a single period) and press Enter.
+​Configure as single-page app? Type N and press Enter.
+​Set up GitHub deploys? Type N and press Enter.
+​Step 5: DEPLOY! 🚀
+​This is the final step. In your terminal, type:
+​firebase deploy --only hosting
+​What happens next:
+​Firebase will upload your HTML, CSS, JS, and PWA files.
+​It will give you a Hosting URL (e.g., https://gamebridge-f4789.web.app).
+​Step 6: Apply to Your First Network
+​Now that you have a live link, go to CPALead.com or AdBlueMedia.com.
+​Register as a Publisher.
+​When they ask for your "Website URL," give them the link Firebase gave you.
+​For "Promotion Method," type: "I have a loyalty gaming platform where users earn rewards for completing game-related tasks and installs."
+
+
+
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
