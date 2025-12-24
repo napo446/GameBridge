@@ -106,62 +106,7 @@
 
     const signUpBtn = document.getElementById("executeSignUp");
 
-    signUpBtn.addEventListener("click", async () => {
-        const email = document.getElementById("regEmail").value.trim();
-        const password = document.getElementById("regPass").value;
 
-        if (!email || !password) return alert("Please fill in all fields.");
-        if (password.length < 6) return alert("Password must be at least 6 characters.");
-
-        signUpBtn.disabled = true;
-        signUpBtn.innerText = "PROCESSING...";
-
-        try {
-            // 1️⃣ Create Auth Account
-            const cred = await createUserWithEmailAndPassword(auth, email, password);
-            const user = cred.user;
-
-            // 2️⃣ Create User Profile (NO TRUSTED FLAGS)
-            await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid,
-                email: user.email,
-                role: "player",
-                joinedAt: serverTimestamp()
-            });
-
-            // 3️⃣ Log Signup Event (Platform Analytics)
-            await addDoc(collection(db, "events"), {
-                userId: user.uid,
-                email: user.email,
-                type: "signup",
-                method: "email",
-                timestamp: serverTimestamp()
-            });
-
-            // 4️⃣ Send Verification Email
-            await sendEmailVerification(user);
-
-            alert(
-                "Account created! A verification link has been sent to " +
-                email +
-                ". Please verify your email before logging in."
-            );
-
-            // 5️⃣ Force Logout Until Verified
-            await signOut(auth);
-            window.location.href = "index.html";
-
-        } catch (error) {
-            signUpBtn.disabled = false;
-            signUpBtn.innerText = "SEND VERIFICATION LINK";
-
-            if (error.code === "auth/email-already-in-use") {
-                alert("This email is already registered. Try logging in.");
-            } else {
-                alert("Signup failed: " + error.message);
-            }
-        }
-    });
 </script>
 </body>
 </html>
