@@ -140,6 +140,130 @@
             messagingSenderId: "562553872482",
             appId: "1:562553872482:web:02b34e7bc1b7a25af8f13b"
         };
+// ... (Imports and Config stay the same) ...
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const ADMIN_EMAIL = "ownergamebridge@gmail.com";
+
+// --- SECURITY ---
+onAuthStateChanged(auth, (u) => { if (!u || u.email !== ADMIN_EMAIL) window.location.href = 'index.html'; });
+document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth).then(() => window.location.href = 'index.html'));
+
+// --- 1. LIVE PLAYER SYNC ---
+onSnapshot(collection(db, "users"), (snap) => {
+    document.getElementById('playerCount').innerText = snap.size;
+    const list = document.getElementById('userList');
+    list.innerHTML = "";
+    snap.forEach(d => {
+        const u = d.data();
+        list.innerHTML += `
+            <div class="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-cyan-400/30 transition group">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-400 font-bold border border-cyan-500/20">${(u.email || 'P')[0].toUpperCase()}</div>
+                    <div>
+                        <p class="text-[11px] font-bold truncate w-24">${u.email || 'Anonymous'}</p>
+                        <span class="text-[9px] text-gray-400 uppercase font-black tracking-tighter">UID: ${d.id.substring(0,8)}...</span>
+                    </div>
+                </div>
+                <button onclick="kickUser('${d.id}')" class="text-[10px] bg-red-500/10 text-red-500 px-3 py-1 rounded-lg font-black hover:bg-red-500 opacity-0 group-hover:opacity-100 transition">BAN</button>
+            </div>`;
+    });
+});
+window.kickUser = (id) => confirm("Permanently ban player?") && deleteDoc(doc(db, "users", id));
+
+// --- 2. BILLING FEED & REAL TOTAL REVENUE ---
+// We use a separate snapshot for the TOTAL to ensure it counts EVERYTHING, not just the last 25.
+onSnapshot(collection(db, "events"), (snap) => {
+    let grandTotal = 0;
+    snap.forEach(doc => grandTotal += (doc.data().value || 0));
+    document.getElementById('totalRevenue').innerText = `$${grandTotal.toFixed(2)}`;
+});
+
+// This snapshot handles the VISUAL feed (Last 25 events)
+onSnapshot(query(collection(db, "events"), orderBy("timestamp", "desc"), limit(25)), (snap) => {
+    const feed = document.getElementById('eventFeed');
+    document.getElementById('eventCount').innerText = snap.size;
+    feed.innerHTML = "";
+    snap.forEach(d => {
+        const e = d.data();
+        feed.innerHTML += `
+            <div class="p-4 bg-cyan-400/5 rounded-2xl border-l-4 border-cyan-400 text-[11px] mb-2">
+                <div class="flex justify-between font-black items-start">
+                    <span class="text-cyan-400 tracking-widest uppercase">${e.type || 'TASK'}</span>
+                    <span class="text-green-400 font-mono">+$${(e.value||0).toFixed(2)}</span>
+                </div>
+                <p class="text-gray-300 mt-1 font-semibold">${e.userEmail || 'User'}</p>
+                <p class="text-gray-500 text-[9px] uppercase">${e.gameName || 'Offerwall'} • Verified</p>
+            </div>`;
+    });
+});
+
+// --- 3. INVENTORY TABLE ---
+onSnapshot(collection(db, "games"), (snap) => {
+    document.getElementById('gameCount').innerText = snap.size;
+    const table = document.getElementById('inventoryTable');
+    table.innerHTML = "";
+    snap.forEach(d => {
+        const g = d.data();
+        table.innerHTML += `
+            <tr class="border-b border-white/5 hover:bg-white/5 transition">
+                <td class="py-5 font-bold">
+                    <p class="text-cyan-400">${g.title}</p>
+                    <p class="text-[9px] text-gray-500 uppercase truncate w-32">${g.url}</p>
+                </td>
+                <td class="py-5 text-gray-400 font-medium">${g.studio}</td>
+                <td class="py-5">
+                    <p class="text-[10px]"><span class="text-gray-500">Ad:</span> $${g.adPayout}</p>
+                    <p class="text-[10px]"><span class="text-gray-500">Ins:</span> $${g.installPayout}</p>
+                </td>
+                <td class="py-5">
+                    <span class="bg-purple-500/10 text-purple-400 px-2 py-1 rounded text-[10px] font-bold">Lvl ${g.milestones?.level} ($${g.milestones?.payout})</span>
+                </td>
+                <td class="py-5 font-mono font-bold text-green-400">$${(g.accumulatedRevenue || 0).toFixed(2)}</td>
+                <td class="py-5">
+                    <span class="status-pill ${g.status==='active'?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-500'}">
+                        ${g.status}
+                    </span>
+                </td>
+                <td class="py-5 text-right">
+                    <button onclick="toggleGame('${d.id}', '${g.status}')" class="p-2 hover:bg-white/10 rounded-lg">${g.status === 'active' ? '⏸️' : '▶️'}</button>
+                    <button onclick="deleteGame('${d.id}')" class="p-2 hover:bg-red-500/20 rounded-lg text-red-400">🗑️</button>
+                </td>
+            </tr>`;
+    });
+});
+
+window.toggleGame = (id, cur) => updateDoc(doc(db, "games", id), { status: cur === 'active' ? 'disabled' : 'active' });
+window.deleteGame = (id) => confirm("Remove game?") && deleteDoc(doc(db, "games", id));
+
+// --- 4. GAME DEPLOYMENT ---
+document.getElementById('addGameBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('addGameBtn');
+    const title = document.getElementById('gameTitle').value;
+    const url = document.getElementById('gameUrl').value;
+    const studio = document.getElementById('studioName').value;
+    const ad = parseFloat(document.getElementById('adPayout').value) || 0;
+    const inst = parseFloat(document.getElementById('installPayout').value) || 0;
+    const lvl = document.getElementById('targetLevel').value || 0;
+    const lvlP = parseFloat(document.getElementById('levelPayout').value) || 0;
+
+    if(!title || !url) return alert("Title and URL required.");
+
+    btn.disabled = true; btn.innerText = "DEPLOYING...";
+    try {
+        await addDoc(collection(db, "games"), {
+            title, url, studio, status: 'active',
+            adPayout: ad, installPayout: inst,
+            milestones: { level: lvl, payout: lvlP },
+            accumulatedRevenue: 0,
+            createdAt: serverTimestamp()
+        });
+        alert("Deployed!");
+    } catch (e) { alert(e.message); } 
+    finally { btn.disabled = false; btn.innerText = "PUSH CONFIG TO LIVE"; }
+});
 
 
     </script>
