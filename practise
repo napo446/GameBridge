@@ -1,6 +1,86 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // --- GLOBAL HELPERS ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true || 
+        request.auth.token.email == 'ownergamebridge@gmail.com'
+      );
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isEmailOwner(email) {
+      return isSignedIn() && request.auth.token.email == email;
+    }
+
+    // --- COLLECTION RULES ---
+
+    // 1. Games: Catalog & Rate Card
+    match /games/{gameId} {
+      // Players can only see active games; Admin sees drafts/disabled ones too
+      allow read: if isAdmin() || (isSignedIn() && resource.data.status == "active");
+      allow write: if isAdmin();
+    }
+
+    // 2. Events: The Immutable Billing Log
+    match /events/{eventId} {
+      // Admin monitors all; Players only see their own history
+      allow read: if isAdmin() || isEmailOwner(resource.data.userName) || isOwner(resource.data.userId);
+      
+      // CREATE: Players can log ads/installs, but must match their own identity
+      // We enforce server-side timestamps to prevent backdating fraud
+      allow create: if isSignedIn() 
+        && (request.resource.data.userName == request.auth.token.email || request.resource.data.userId == request.auth.uid)
+        && request.resource.data.value >= 0 // Prevent negative balance injection
+        && request.resource.data.timestamp == request.time; 
+
+      // NO UPDATES: Once a billing event is logged, it cannot be changed by the player
+      allow update, delete: if isAdmin();
+    }
+
+    // 3. Player Progress: Milestone Tracking
+    match /playerProgress/{docId} {
+      allow read: if isAdmin() || isOwner(resource.data.userId);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      
+      // UPDATE: Players can update their level, but CANNOT toggle 'milestonePaid'
+      // This is the most critical rule for your B2B billing integrity.
+      allow update: if isAdmin() || (
+        isOwner(resource.data.userId) && 
+        request.resource.data.milestonePaid == resource.data.milestonePaid
+      );
+    }
+
+    // 4. User Profiles
+    match /users/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      // Allows sync on login for the specific user
+      allow write: if isAdmin() || isOwner(userId);
+    }
+
+    // 5. Analytics & Metadata
+    match /analytics/{docId} {
+      allow create: if isSignedIn();
+      allow read, write: if isAdmin();
+    }
+  }
+}
+
+
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
 
     /* ============================
        🔐 HELPER FUNCTIONS
