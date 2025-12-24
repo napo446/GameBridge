@@ -184,6 +184,40 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
+// 1. Fixed syncUser: Don't try to create/overwrite roles here.
+// Only update the lastLogin.
+const syncUser = async (user) => {
+    const userRef = doc(db, "users", user.uid);
+    try {
+        // Use updateDoc instead of setDoc to ensure we don't accidentally 
+        // violate the "create" rules or send empty roles.
+        await updateDoc(userRef, {
+            lastLogin: serverTimestamp()
+        });
+    } catch (e) {
+        // If document doesn't exist (first time Google user), 
+        // then we use the "Create" logic allowed by your rules.
+        if (e.code === 'not-found' || e.code === 'permission-denied') {
+            await setDoc(userRef, {
+                uid: user.uid,
+                email: user.email,
+                role: "player", // Rule requires this
+                joinedAt: serverTimestamp(),
+                lastLogin: serverTimestamp()
+            });
+        }
+    }
+};
+
+// 2. Fixed logLogin: Remove the 'email' field to match your rules.
+const logLogin = (user, method) =>
+    addDoc(collection(db, "events"), {
+        userId: user.uid,
+        type: "login", // Must be in the allowed list
+        method: method,
+        timestamp: serverTimestamp()
+        // REMOVED 'email' because rules don't permit it in events
+    });
 
 
 document.getElementById("googleBtn").onclick = async () => {
