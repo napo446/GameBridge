@@ -15,6 +15,13 @@
         .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .tab-active { border-bottom: 2px solid #22d3ee; color: #22d3ee; }
     </style>
+    <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+
 </head>
 <body class="p-4 md:p-8">
     <nav class="flex justify-between items-center mb-10">
