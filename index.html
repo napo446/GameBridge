@@ -152,6 +152,133 @@
     </div>
 </main>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+    getFirestore,
+    doc,
+    updateDoc, 
+    setDoc,
+    addDoc,
+    collection,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp({
+    apiKey: "AIzaSyCLd4MLONU_5OFie6WN2XmXmlMyfuJ5_8I",
+    authDomain: "gamebridge-f4789.firebaseapp.com",
+    projectId: "gamebridge-f4789",
+    storageBucket: "gamebridge-f4789.appspot.com",
+    messagingSenderId: "562553872482",
+    appId: "1:562553872482:web:02b34e7bc1b7a25af8f13b"
+});
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+// FIXED: This version avoids the 'getDoc' read-trap.
+const syncUser = async (user) => {
+    const userRef = doc(db, "users", user.uid);
+    try {
+        // We only try to update the timestamp. 
+        // We DO NOT send 'role' or 'email' here because the UPDATE rule forbids touching 'role'.
+        await updateDoc(userRef, {
+            lastLogin: serverTimestamp()
+        });
+    } catch (e) {
+        console.warn("User doc update skipped (normal for new Google users or strict rules)");
+        // If it's a brand new Google user, we try to create the doc.
+        // If it's a verified email user, the doc should already exist from signup.html.
+        if (user.providerData[0].providerId === 'google.com') {
+            try {
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    role: "player",
+                    joinedAt: serverTimestamp(),
+                    lastLogin: serverTimestamp()
+                });
+            } catch (err) { console.error("Create failed", err); }
+        }
+    }
+};
+
+// FIXED: Removed 'email' to match your 'events' rule exactly
+const logLogin = async (user, method) => {
+    try {
+        await addDoc(collection(db, "events"), {
+            userId: user.uid,
+            type: "login", 
+            method: method,
+            timestamp: serverTimestamp()
+        });
+    } catch (e) {
+        console.warn("Event log skipped due to rules.");
+    }
+};
+
+document.getElementById("googleBtn").onclick = async () => {
+    try {
+        const { user } = await signInWithPopup(auth, provider);
+        await syncUser(user);
+        await logLogin(user, "google");
+        const token = await user.getIdTokenResult();
+        location.href = token.claims.admin ? "admin-portal.html" : "player-dashboard.html";
+    } catch (error) {
+        alert(error.message);
+    }
+};
+
+document.getElementById("loginBtn").onclick = async () => {
+    const emailVal = document.getElementById("email").value.trim();
+    const pass = document.getElementById("password").value;
+    if (!emailVal || !pass) return alert("Missing credentials");
+
+    try {
+        const { user } = await signInWithEmailAndPassword(auth, emailVal, pass);
+        
+        if (!user.emailVerified) {
+            alert("Verify your email first!");
+            return;
+        }
+
+        // We run these, but we don't 'await' them strictly in a way that blocks login
+        // if the security rules are being finicky.
+        syncUser(user).catch(console.error);
+        logLogin(user, "password").catch(console.error);
+
+        const token = await user.getIdTokenResult();
+        // Delay slightly to ensure Auth state is recognized by the next page
+        setTimeout(() => {
+            location.href = token.claims.admin ? "admin-portal.html" : "player-dashboard.html";
+        }, 500);
+
+    } catch (error) {
+        alert("Login failed: " + error.message);
+    }
+};
+
+document.getElementById("forgotBtn").onclick = async () => {
+    const emailVal = document.getElementById("email").value.trim();
+    if (!emailVal) return alert("Enter email");
+    try {
+        await sendPasswordResetEmail(auth, emailVal);
+        alert("Password reset sent");
+    } catch (error) {
+        alert(error.message);
+    }
+};
+
+document.getElementById("signUpBtn").onclick = () => location.href = "signup.html";
+</script>
 
 
 
