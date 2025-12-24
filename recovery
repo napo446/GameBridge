@@ -173,3 +173,140 @@ signup
 
 
 
+
+
+
+
+
+
+rules 
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ============================
+       🔐 HELPER FUNCTIONS
+    ============================ */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Admin via custom claim (RECOMMENDED)
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    /* ============================
+       👤 USERS
+    ============================ */
+    match /users/{userId} {
+
+      // Player reads own profile, admin reads all
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Create profile on signup
+      allow create: if isOwner(userId)
+        && request.resource.data.role == "player"
+        && !("admin" in request.resource.data);
+
+      // Player may update safe fields only
+      allow update: if isOwner(userId)
+        && !("role" in request.resource.data)
+        && !("admin" in request.resource.data);
+
+      // Admin only
+      allow delete: if isAdmin();
+    }
+
+    /* ============================
+       🎮 GAMES (ADMIN OWNED)
+    ============================ */
+    match /games/{gameId} {
+
+      // Logged-in users can discover games
+      allow read: if isSignedIn();
+
+      // Admin controls all game data
+      allow create, delete: if isAdmin();
+
+      // Prevent client-side revenue tampering
+      allow update: if isAdmin()
+        && !("accumulatedRevenue" in request.resource.data);
+    }
+
+    /* ============================
+       📊 EVENTS (IMMUTABLE LOG)
+       Ads / Installs / Logins
+    ============================ */
+    match /events/{eventId} {
+
+      // Admin analytics only
+      allow read: if isAdmin();
+
+      // Player can log ONLY their own events
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.type in [
+          "signup",
+          "login",
+          "ad_view",
+          "install",
+          "click",
+          "session"
+        ]
+        // Block revenue injection
+        && !("value" in request.resource.data)
+        && !("paid" in request.resource.data);
+
+      // Events are write-once
+      allow update, delete: if false;
+    }
+
+    /* ============================
+       🎯 PLAYER PROGRESS
+       (Milestones / Levels)
+    ============================ */
+    match /playerProgress/{progressId} {
+
+      // Player sees own progress, admin sees all
+      allow read: if isAdmin()
+        || request.auth.uid == resource.data.userId;
+
+      // Player submits milestone ONCE
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.level >= 1
+        && request.resource.data.milestonePaid == false;
+
+      // Only Cloud Functions / Admin can mark paid
+      allow update: if isAdmin();
+
+      allow delete: if false;
+    }
+
+    /* ============================
+       📈 ANALYTICS / AGGREGATES
+    ============================ */
+    match /analytics/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    /* ============================
+       🚫 DEFAULT DENY (CRITICAL)
+    ============================ */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+
+
+
+
