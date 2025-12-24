@@ -106,6 +106,64 @@
 
     const signUpBtn = document.getElementById("executeSignUp");
 
+signUpBtn.addEventListener("click", async () => {
+    const email = document.getElementById("regEmail").value.trim();
+    const password = document.getElementById("regPass").value;
+
+    if (!email || !password) return alert("Please fill in all fields.");
+    if (password.length < 6) return alert("Password must be at least 6 characters.");
+
+    signUpBtn.disabled = true;
+    signUpBtn.innerText = "PROCESSING...";
+
+    try {
+        // 1️⃣ Create Auth Account
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const user = cred.user;
+
+        // 2️⃣ Create User Profile 
+        // ALIGNED WITH RULES: role must be "player" and NO "admin" key allowed.
+        await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid,
+            email: user.email,
+            role: "player",
+            joinedAt: serverTimestamp() 
+        });
+
+        // 3️⃣ Log Signup Event
+        // ALIGNED WITH RULES: userId must match auth.uid, 
+        // type must be "signup", no "value" or "paid" keys.
+        await addDoc(collection(db, "events"), {
+            userId: user.uid,
+            type: "signup", // Must match the allowed list in rules
+            method: "email",
+            timestamp: serverTimestamp()
+        });
+
+        // 4️⃣ Send Verification Email
+        await sendEmailVerification(user);
+
+        alert("Account created! Verify your email before logging in.");
+
+        // 5️⃣ Force Logout
+        await signOut(auth);
+        window.location.href = "index.html";
+
+    } catch (error) {
+        signUpBtn.disabled = false;
+        signUpBtn.innerText = "SEND VERIFICATION LINK";
+        
+        // Handle the 400 error and Permission errors specifically
+        if (error.code === 'permission-denied') {
+            console.error("Rules blocked the request:", error.message);
+            alert("Security Error: Data format does not match server requirements.");
+        } else if (error.code === 'auth/operation-not-allowed') {
+            alert("Email/Password provider is not enabled in Firebase Console.");
+        } else {
+            alert(error.message);
+        }
+    }
+});
 
 </script>
 </body>
