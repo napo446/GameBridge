@@ -546,7 +546,195 @@ No splits
 No rewards
 
 
+⚠️ FIRST: NON‑NEGOTIABLE TRUTH (READ THIS ONCE)
 
+There is NO way to make AdMob / Unity Ads / IronSource / Meta pay for:
+
+installs
+
+levels
+
+demo plays
+
+❌ Impossible.
+No button, no SDK, no backend can change this.
+
+So to turn ALL actions → YES (paid) you must ADD ONE THING:
+
+👉 Affiliate CPI / CPA networks
+
+This is not optional. This is the only path.
+
+✅ THE EXACT PATH (FROM WHERE YOU ARE NOW)
+
+You already have:
+
+Firebase
+
+Event tracking
+
+Secure rules
+
+Redirects
+
+Level tracking
+
+You are 80% done.
+
+Now do the following in order.
+
+🔥 STEP 1 — CREATE MONEY SOURCES (30 minutes)
+1️⃣ Open this link
+
+👉 https://adgatemedia.com
+
+2️⃣ Click
+
+🟢 “Sign Up”
+
+3️⃣ Choose
+
+✔️ Publisher
+
+4️⃣ Fill the form EXACTLY like this:
+
+Website: https://yourgamebridge.app (or localhost for now)
+
+Traffic type: Web + Android
+
+Monetization: Game installs / rewarded offers
+
+Monthly traffic: estimate (even 1k is fine)
+
+5️⃣ Submit & wait for approval
+
+(usually same day)
+
+6️⃣ While waiting, open:
+
+👉 https://www.tapjoy.com
+
+Click Sign Up
+
+Choose Publisher
+
+Platform: Android
+
+Monetization: Offerwall / CPI
+
+🔥 STEP 2 — GET THE LINKS THAT PAY YOU
+
+After approval:
+
+In AdGate dashboard:
+
+Click Offers
+
+Filter: Android
+
+Choose a game offer
+
+Click Get Tracking Link
+
+You will see something like:
+
+https://tracking.adgatemedia.com/click?offer_id=12345&pub_id=ABCDE
+
+
+👉 THIS LINK = MONEY
+
+🔥 STEP 3 — CHANGE ONE LINE IN YOUR APP (CRITICAL)
+❌ WHAT YOU DO NOW (WRONG)
+window.location.href = "https://play.google.com/store/apps/details?id=com.game";
+
+✅ WHAT YOU MUST DO (RIGHT)
+window.location.href = "https://tracking.adgatemedia.com/click?offer_id=12345&pub_id=ABCDE";
+
+
+📌 This is what makes:
+
+Install = PAID
+
+Level completion = PAID
+
+Tutorial completion = PAID
+
+🔥 STEP 4 — MAKE LEVELS PAY YOU
+
+You do NOT pay users
+You do NOT show earnings
+
+What happens instead:
+
+User installs via affiliate link
+
+User opens game
+
+User reaches required level (e.g. Level 5)
+
+Affiliate SDK detects it
+
+Affiliate network credits YOU
+
+🔥 You already track levels — good.
+
+Now install ONE SDK.
+
+🔥 STEP 5 — INSTALL SDK (DO THIS)
+Choose ONE first (Tapjoy is easiest)
+
+👉 https://dev.tapjoy.com/en/android-sdk/
+
+What you do:
+
+Open Android Studio
+
+Add Tapjoy SDK
+
+Initialize SDK on app launch
+
+Done
+
+Tapjoy handles:
+
+install verification
+
+level verification
+
+fraud protection
+
+payout
+
+Your backend stays untouched.
+
+🔥 STEP 6 — MAKE DEMO PLAYS PAY YOU
+
+Demo plays never pay directly
+So you do this instead:
+
+Demo Flow (DO EXACTLY THIS):
+
+User clicks Play Demo
+
+Show Rewarded Ad
+
+Log ad_view
+
+Start demo
+
+Every 2–3 minutes → show interstitial ad
+
+🔥 Demo = ad container = money
+
+🔥 STEP 7 — STACK ADS (NOW EVERYTHING IS PAID)
+Action	How it pays
+Ad watched	AdMob / Unity
+Ad clicked	AdMob / Unity
+Game installed	Affiliate CPI
+Level reached	Affiliate CPA
+Demo played	Ads inside demo
+
+✅ ALL ACTIONS = YES (PAID)
 
 
 
