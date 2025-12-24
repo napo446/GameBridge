@@ -1,3 +1,54 @@
+GameBridge/:221 Uncaught (in promise) FirebaseError: Missing or insufficient permissions.
+Promise.then		
+co	@	webchannel_connection.ts:265
+send	@	stream_bridge.ts:85
+e_	@	persistent_stream.ts:319
+E_	@	persistent_stream.ts:845
+__PRIVATE_onWriteStreamOpen	@	remote_store.ts:758
+(anonymous)	@	persistent_stream.ts:512
+(anonymous)	@	persistent_stream.ts:574
+(anonymous)	@	async_queue_impl.ts:137
+(anonymous)	@	async_queue_impl.ts:327
+Promise.then		
+ou	@	async_queue_impl.ts:188
+enqueue	@	async_queue_impl.ts:135
+enqueueAndForget	@	async_queue_impl.ts:96
+(anonymous)	@	persistent_stream.ts:572
+(anonymous)	@	persistent_stream.ts:497
+Ao	@	webchannel_connection.ts:50
+(anonymous)	@	dom.ts:22
+setTimeout		
+vo	@	dom.ts:19
+__	@	persistent_stream.ts:784
+s_	@	persistent_stream.ts:492
+(anonymous)	@	persistent_stream.ts:464
+Promise.then		
+auth	@	persistent_stream.ts:459
+start	@	persistent_stream.ts:263
+start	@	persistent_stream.ts:775
+__PRIVATE_startWriteStream	@	remote_store.ts:752
+__PRIVATE_fillWritePipeline	@	remote_store.ts:703
+await in __PRIVATE_fillWritePipeline		
+__PRIVATE_syncEngineWrite	@	sync_engine_impl.ts:477
+await in __PRIVATE_syncEngineWrite		
+(anonymous)	@	firestore_client.ts:560
+await in (anonymous)		
+(anonymous)	@	async_queue_impl.ts:137
+(anonymous)	@	async_queue_impl.ts:327
+Promise.then		
+ou	@	async_queue_impl.ts:188
+enqueue	@	async_queue_impl.ts:135
+enqueueAndForget	@	async_queue_impl.ts:96
+__PRIVATE_firestoreClientWrite	@	sync_engine_impl.ts:458
+executeWrite	@	reference_impl.ts:824
+setDoc	@	reference_impl.ts:316
+syncUser	@	GameBridge/:187
+document.getElementById.onclick	@	GameBridge/:218
+
+
+
+
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
