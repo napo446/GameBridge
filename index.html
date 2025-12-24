@@ -165,6 +165,7 @@ import {
     getFirestore,
     doc,
     setDoc,
+    updateDoc,
     addDoc,
     collection,
     serverTimestamp
@@ -183,20 +184,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-const syncUser = user =>
-    setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        lastLogin: serverTimestamp()
-    }, { merge: true });
 
-const logLogin = (user, method) =>
-    addDoc(collection(db, "events"), {
-        userId: user.uid,
-        email: user.email,
-        type: "login",
-        method,
-        timestamp: serverTimestamp()
-    });
 
 document.getElementById("googleBtn").onclick = async () => {
     const { user } = await signInWithPopup(auth, provider);
