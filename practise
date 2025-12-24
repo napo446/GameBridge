@@ -1,6 +1,116 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    /* ============================
+       🌐 GLOBAL HELPERS
+    ============================ */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Fail-safe: Admin via Custom Claim OR hardcoded email
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true || 
+        request.auth.token.email == 'ownergamebridge@gmail.com'
+      );
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    /* ============================
+       👤 USERS (Profile Sync)
+    ============================ */
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Ensure players can't create an account and label themselves "admin"
+      allow create: if isOwner(userId)
+        && !("admin" in request.resource.data)
+        && request.resource.data.role == "player";
+
+      // Allow profile updates (lastLogin, etc) but lock critical fields
+      allow update: if isOwner(userId)
+        && !("admin" in request.resource.data)
+        && !("role" in request.resource.data);
+
+      allow delete: if isAdmin();
+    }
+
+    /* ============================
+       🎮 GAMES (Catalog & Rates)
+    ============================ */
+    match /games/{gameId} {
+      // Players see active games; Admin sees drafts/configs
+      allow read: if isAdmin() || (isSignedIn() && resource.data.status == "active");
+      
+      allow create, delete: if isAdmin();
+
+      // Prevent anyone but Admin from changing game details
+      // Also prevents client-side "accumulatedRevenue" manipulation
+      allow update: if isAdmin()
+        && !("accumulatedRevenue" in request.resource.data);
+    }
+
+    /* ============================
+       📊 EVENTS (The Immutable Billing Log)
+    ============================ */
+    match /events/{eventId} {
+      allow read: if isAdmin(); // Only Admin audits the full log
+
+      // Players can log their own actions (Login, Ad View, Install)
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.type in ["login", "ad_view", "install", "click"]
+        // BLOCK REVENUE INJECTION: Value must come from Admin-side calculation, not the player's browser
+        && !("value" in request.resource.data)
+        && request.resource.data.timestamp == request.time;
+
+      // Billing events can NEVER be changed or deleted (Audit Trail)
+      allow update, delete: if false;
+    }
+
+    /* ============================
+       🎯 PLAYER PROGRESS (Milestones)
+    ============================ */
+    match /playerProgress/{progressId} {
+      allow read: if isAdmin() || isOwner(resource.data.userId);
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.milestonePaid == false;
+
+      // Only Cloud Functions/Admin can flip the 'paid' switch
+      allow update: if isAdmin() || (
+        isOwner(resource.data.userId) && 
+        request.resource.data.milestonePaid == resource.data.milestonePaid
+      );
+    }
+
+    /* ============================
+       📈 ANALYTICS & DEFAULT DENY
+    ============================ */
+    match /analytics/{docId} {
+      allow create: if isSignedIn();
+      allow read, write: if isAdmin();
+    }
+
+    // Global Catch-all: If it's not explicitly allowed above, block it.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+
+
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
     
     // --- GLOBAL HELPERS ---
     
