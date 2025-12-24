@@ -80,6 +80,126 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// ... (Your Firebase Imports and Config stay the same) ...
+
+onAuthStateChanged(auth, user => { if (!user) window.location.href = 'index.html'; });
+
+const gamesContainer = document.getElementById('gamesContainer');
+
+// --- SECURE MONETIZATION LOGIC ---
+
+window.handleLaunchDemo = async (gameId, url) => {
+    if(!auth.currentUser) return;
+    
+    // CPA Preparation: We attach the UID to the URL so the network knows who played
+    const trackingUrl = `${url}${url.includes('?') ? '&' : '?'}click_id=${auth.currentUser.uid}`;
+
+    const adCompleted = confirm("Launch this game session?");
+    if(adCompleted) {
+        try {
+            const gSnap = await getDoc(doc(db, "games", gameId));
+            const payout = gSnap.exists() ? gSnap.data().adPayout : 0;
+
+            await addDoc(collection(db, "events"), {
+                userId: auth.currentUser.uid, // FIXED: Use UID for tracking
+                userEmail: auth.currentUser.email,
+                gameName: gSnap.data().title || "Unknown Game",
+                type: "ad_view", // Matches your security rules list
+                value: Number(payout) || 0,
+                timestamp: serverTimestamp()
+            });
+            window.open(trackingUrl, "_blank"); // Opens with tracking ID
+        } catch(err) { console.error("Billing error:", err); }
+    }
+};
+
+window.handleInstall = async (gameId, url) => {
+    if(!auth.currentUser) return;
+    
+    const trackingUrl = `${url}${url.includes('?') ? '&' : '?'}subid=${auth.currentUser.uid}`;
+
+    const confirmed = confirm("Redirecting to task. Complete to verify?");
+    if(confirmed) {
+        try {
+            const gSnap = await getDoc(doc(db, "games", gameId));
+            const payout = gSnap.exists() ? gSnap.data().installPayout : 0;
+
+            await addDoc(collection(db, "events"), {
+                userId: auth.currentUser.uid, // FIXED: Use UID
+                userEmail: auth.currentUser.email,
+                gameName: gSnap.data().title || "Unknown Game",
+                type: "install",
+                value: Number(payout) || 0,
+                timestamp: serverTimestamp()
+            });
+
+            // NOTE: Removed the 'updateDoc' for accumulatedRevenue. 
+            // This must be done on the Admin side for security.
+
+            window.open(trackingUrl, "_blank");
+        } catch(err) { console.error("Tracking error:", err); }
+    }
+};
+
+// --- VIEW NAVIGATION ---
+
+const loadLibrary = () => {
+    document.getElementById('viewTitle').innerHTML = `<h2 class="text-2xl font-bold mb-2">Discover & Play</h2><p class="text-gray-400 text-sm">Access verified game tasks.</p>`;
+    document.getElementById('navLibrary').className = "text-white border-b-2 border-cyan-400 pb-1";
+    document.getElementById('navHistory').className = "text-gray-400 hover:text-white transition-colors";
+    
+    const q = query(collection(db, "games"), where("status","==","active"), orderBy("createdAt","desc"));
+    onSnapshot(q, snap => {
+        gamesContainer.innerHTML = "";
+        snap.forEach(d => {
+            const g = d.data();
+            gamesContainer.innerHTML += `
+            <div class="game-card p-4 rounded-2xl shadow-lg border-l-4 border-cyan-500/30">
+                <div class="flex gap-4 mb-4">
+                    <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-3xl">🕹️</div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-white">${g.title}</h3>
+                        <p class="text-[10px] text-cyan-400 uppercase font-black tracking-widest">${g.studio}</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="handleLaunchDemo('${d.id}', '${g.url}')" class="btn-play py-3 rounded-xl font-bold text-xs uppercase text-white">▶ Play</button>
+                    <button onclick="handleInstall('${d.id}', '${g.url}')" class="btn-install py-3 rounded-xl font-bold text-xs uppercase text-white">📲 Task</button>
+                </div>
+            </div>`;
+        });
+    });
+};
+
+const loadHistory = () => {
+    document.getElementById('viewTitle').innerHTML = `<h2 class="text-2xl font-bold mb-2">My Activity</h2><p class="text-gray-400 text-sm">Recently logged sessions.</p>`;
+    document.getElementById('navHistory').className = "text-white border-b-2 border-cyan-400 pb-1";
+    document.getElementById('navLibrary').className = "text-gray-400 hover:text-white transition-colors";
+
+    // FIXED: Use userId here to match the security rules
+    const q = query(collection(db, "events"), where("userId", "==", auth.currentUser.uid), orderBy("timestamp", "desc"));
+    onSnapshot(q, snap => {
+        gamesContainer.innerHTML = "";
+        if(snap.empty) gamesContainer.innerHTML = `<p class="text-center text-gray-500 py-10">No history found.</p>`;
+        snap.forEach(d => {
+            const e = d.data();
+            gamesContainer.innerHTML += `
+            <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center">
+                <div>
+                    <p class="text-xs font-bold">${e.gameName || 'Task'}</p>
+                    <p class="text-[10px] text-gray-500 uppercase">${e.type}</p>
+                </div>
+                <p class="text-emerald-400 font-mono text-[10px]">VERIFIED</p>
+            </div>`;
+        });
+    });
+};
+
+document.getElementById('navLibrary').addEventListener('click', loadLibrary);
+document.getElementById('navHistory').addEventListener('click', loadHistory);
+document.getElementById('logoutBtn').addEventListener("click", () => signOut(auth).then(() => window.location.href = "index.html"));
+
+loadLibrary();
 
 
 </script>
