@@ -32,4 +32,48 @@ Before we get started, keep in mind:
 
   * You are initializing within an existing Firebase project directory
 
+✔ Are you ready to proceed? No
+
+Error: Aborted by user.
+
+C:\Users\tshep\GameBridge>firebase  init hosting
+
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\tshep
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+✔ Are you ready to proceed? No
+
+Error: Aborted by user.
+
+Having trouble? Try firebase [command] --help
+
+C:\Users\tshep\GameBridge>cd C:\Users\tshep\GameBridge
+
+C:\Users\tshep\GameBridge>firebase init hosting
+
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\tshep
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
 ? Are you ready to proceed? (Y/n)
