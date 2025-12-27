@@ -20,4 +20,27 @@ Error: firebase use must be run from a Firebase project directory.
 
 Run firebase init to start a project directory in the current folder.
 
+C:\Users\tshep\GameBridge>firebase init hosting
+
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\tshep\GameBridge
+
+√ Are you ready to proceed? Yes
+
+=== Project Setup
+
+First, let's associate this project directory with a Firebase project.
+You can create multiple project aliases by running firebase use --add,
+but for now we'll just set up a default project.
+
+
+Error: Failed to get Firebase project eduproassistprj. Please make sure the project exists and your account has permission to access it.
+
 C:\Users\tshep\GameBridge>
