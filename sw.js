@@ -1,12 +1,10 @@
 Microsoft Windows [Version 10.0.26200.7171]
 (c) Microsoft Corporation. All rights reserved.
 
-C:\Users\tshep>cd C:\Users\tshep\GameBridge
-
 C:\Users\tshep\GameBridge>npm install -g firebase-tools
 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
 
-added 1 package, and changed 749 packages in 5m
+added 1 package, and changed 749 packages in 8m
 
 92 packages are looking for funding
   run `npm fund` for details
@@ -26,54 +24,19 @@ C:\Users\tshep\GameBridge>firebase init
 
 You're about to initialize a Firebase project in this directory:
 
-  C:\Users\tshep
+  C:\Users\tshep\GameBridge
 
-Before we get started, keep in mind:
+√ Are you ready to proceed? Yes
+√ Which Firebase features do you want to set up for this directory? Press Space to select features, then Enter to
+confirm your choices. Hosting: Set up deployments for static web apps
 
-  * You are initializing within an existing Firebase project directory
+=== Project Setup
 
-✔ Are you ready to proceed? No
+First, let's associate this project directory with a Firebase project.
+You can create multiple project aliases by running firebase use --add,
+but for now we'll just set up a default project.
 
-Error: Aborted by user.
 
-C:\Users\tshep\GameBridge>firebase  init hosting
+Error: Failed to get Firebase project eduproassistprj. Please make sure the project exists and your account has permission to access it.
 
-     ######## #### ########  ######## ########     ###     ######  ########
-     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
-     ######    ##  ########  ######   ########  #########  ######  ######
-     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
-     ##       #### ##     ## ######## ########  ##     ##  ######  ########
-
-You're about to initialize a Firebase project in this directory:
-
-  C:\Users\tshep
-
-Before we get started, keep in mind:
-
-  * You are initializing within an existing Firebase project directory
-
-✔ Are you ready to proceed? No
-
-Error: Aborted by user.
-
-Having trouble? Try firebase [command] --help
-
-C:\Users\tshep\GameBridge>cd C:\Users\tshep\GameBridge
-
-C:\Users\tshep\GameBridge>firebase init hosting
-
-     ######## #### ########  ######## ########     ###     ######  ########
-     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
-     ######    ##  ########  ######   ########  #########  ######  ######
-     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
-     ##       #### ##     ## ######## ########  ##     ##  ######  ########
-
-You're about to initialize a Firebase project in this directory:
-
-  C:\Users\tshep
-
-Before we get started, keep in mind:
-
-  * You are initializing within an existing Firebase project directory
-
-? Are you ready to proceed? (Y/n)
+C:\Users\tshep\GameBridge>
