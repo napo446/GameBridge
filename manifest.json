@@ -1,1 +1,17 @@
+{
+  "name": "GameBridge Master Portal",
+  "short_name": "GameBridge",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0d1b2a",
+  "theme_color": "#00f5d4",
+  "icons": [
+    {
+      "src": "gold-g-icon.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
 
